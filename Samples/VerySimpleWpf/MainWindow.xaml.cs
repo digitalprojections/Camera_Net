@@ -30,7 +30,7 @@ namespace VerySimpleWpf
                 var camera_moniker = _CameraChoice.Devices[0].Mon;
 
                 // Set selected camera to camera control with default resolution
-                cameraControl.CameraControl.SetCamera(camera_moniker, null);
+                cameraControl.CameraControl.SetCamera(camera_moniker, null,null);
             }
         }
 
