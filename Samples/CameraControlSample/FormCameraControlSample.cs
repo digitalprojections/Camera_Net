@@ -134,7 +134,7 @@ namespace CameraControlSample
             else
             {
                 // Set camera
-                cameraControl.SetCamera(_CameraChoice.Devices[comboBoxCameraList.SelectedIndex].Mon, null, null);
+                cameraControl.SetCamera(_CameraChoice.Devices[comboBoxCameraList.SelectedIndex].Mon, null);
                 //SetCamera(_CameraChoice.Devices[ comboBoxCameraList.SelectedIndex ].Mon, null);
             }
 
@@ -167,7 +167,7 @@ namespace CameraControlSample
 
             // Recreate camera
             //SetCamera(_Camera.Moniker, resolutions[comboBoxResolutionIndex]);
-            cameraControl.SetCamera(cameraControl.Moniker, resolutions[comboBoxResolutionIndex], null);
+            cameraControl.SetCamera(cameraControl.Moniker, resolutions[comboBoxResolutionIndex]);
 
         }
 

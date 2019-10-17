@@ -65,7 +65,7 @@ namespace Camera_NET
         /// </summary>
         /// <param name="moniker">Moniker (device identification) of camera.</param>
         /// <param name="resolution">Resolution of camera's output.</param>
-        public void SetCamera(IMoniker moniker, Resolution resolution, FPS fps)
+        public void SetCamera(IMoniker moniker, Resolution resolution)
         {
             // Close current if it was opened
             CloseCamera();
@@ -85,12 +85,6 @@ namespace Camera_NET
             if (resolution != null)
             {
                 _Camera.Resolution = resolution;
-            }
-            // select fps
-            
-            if (resolution != null)
-            {
-                _Camera.FPS = fps;
             }
 
             // Initialize
@@ -161,15 +155,6 @@ namespace Camera_NET
             }
         }
 
-
-        public int[] VideoProps
-        {
-            get
-            {
-                return _Camera.GetVideoProps;
-            }
-        }
-
         /// <summary>
         /// Gets or sets a resolution of camera's output.
         /// </summary>
@@ -204,43 +189,6 @@ namespace Camera_NET
                 _ThrowIfCameraWasNotCreated();
 
                 return _Camera.ResolutionListRGB;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a fps of camera's output.
-        /// </summary>
-        /// <seealso cref="FPSList"/>
-        [Browsable(false)] // hide from property browser
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] // do not serialize to code ever
-        public FPS FPS
-        {
-            get
-            {
-                _ThrowIfCameraWasNotCreated();
-
-                return _Camera.FPS;
-            }
-            set
-            {
-                _ThrowIfCameraWasNotCreated();
-
-                _Camera.FPS = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a list of available resolutions (in RGB format).
-        /// </summary>        
-        [Browsable(false)] // hide from property browser
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] // do not serialize to code ever
-        public FPSList FPSList
-        {
-            get
-            {
-                _ThrowIfCameraWasNotCreated();
-
-                return _Camera.FPSList;
             }
         }
 
@@ -550,15 +498,6 @@ namespace Camera_NET
             _ThrowIfCameraWasNotCreated();
 
             return _Camera.SnapshotSourceImage();
-        }
-
-        /// <summary>
-        /// Raw data pointer that can be converted to array of bytes
-        /// </summary>
-        /// <returns></returns>
-        public IntPtr ImageData()
-        {
-            return _Camera.ImageData();
         }
 
         #endregion

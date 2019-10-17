@@ -34,11 +34,6 @@ namespace Camera_NET
     /// 
     /// <author> free5lot (free5lot@yandex.ru) </author>
     /// <version> 2013.10.16 </version>
-    /// 
-    /// Additions of new features or corrections
-    /// <author> digitalprojects (fuzalov@gmail.com)</author>
-    /// <version>2019.10.16</version>
-    /// Exactly 6 years later
     public class Resolution : IComparable<Resolution>, IEquatable<Resolution>
     {
         /// <summary>
@@ -84,7 +79,7 @@ namespace Camera_NET
                     return 1;
             }
 
-            // Main comparison
+            // Main comparation
             // x and y are not null
             if (x.Width > y.Width)
                 return 1;

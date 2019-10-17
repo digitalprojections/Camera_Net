@@ -344,7 +344,7 @@ namespace Camera_NET
         /// b.RotateFlip(RotateFlipType.RotateNoneFlipY);
         /// </summary>
         /// <returns>Returned pointer to be freed by caller with Marshal.FreeCoTaskMem</returns>
-        public IntPtr GetNextFrame()
+        private IntPtr GetNextFrame()
         {
             // get ready to wait for new image
             m_PictureReady.Reset();
@@ -366,15 +366,9 @@ namespace Camera_NET
                 m_ipBuffer = IntPtr.Zero;
                 throw;
             }
-                       
+
             // Got one
             return m_ipBuffer;
-        }
-
-        public int[] VideoProps()
-        {
-            int[] vs = {m_videoWidth, m_videoHeight, m_videoBitCount};
-            return vs;
         }
 
         /// <summary>

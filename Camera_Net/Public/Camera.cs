@@ -78,16 +78,6 @@ namespace Camera_NET
         private ResolutionList _ResolutionList = new ResolutionList();
 
         /// <summary>
-        /// Private field. Use the public property <see cref="FPS"/> for access to this value.
-        /// </summary>
-        private FPS _FPS = null;
-
-        /// <summary>
-        /// Private field. Use the public property <see cref="FPSList"/> for access to this value.
-        /// </summary>
-        private FPSList _FPSList = new FPSList();
-
-        /// <summary>
         /// Private field. Use the public property <see cref="MixerEnabled"/> for access to this value.
         /// </summary>
         private bool _bMixerEnabled = false;
@@ -181,8 +171,8 @@ namespace Camera_NET
         /// <summary>
         /// Private field. DsROTEntry allows to "Connect to remote graph" from GraphEdit
         /// </summary>
-        DsROTEntry _rot = null;        
-#endif
+        DsROTEntry _rot = null;
+        #endif
 
 
         /// <summary>
@@ -272,16 +262,6 @@ namespace Camera_NET
 
         #region Public properties
         
-            public int[] GetVideoProps
-        {
-            get
-            {
-                return _pSampleGrabberHelper.VideoProps();
-            }
-        }
-            
-
-
         /// <summary>
         /// Gets a control that is used for hosting camera's output.
         /// </summary>
@@ -321,30 +301,6 @@ namespace Camera_NET
         public ResolutionList ResolutionListRGB
         {
             get { return _ResolutionList; }
-        }
-
-        /// <summary>
-        /// Gets or sets a FPS of camera's output.
-        /// </summary>        
-        public FPS FPS
-        {
-            get { return _FPS; }
-            set
-            {
-                // Change of fps is not allowed after graph's built
-                if (_bGraphIsBuilt)
-                    throw new Exception(@"Change of FrameRate is not allowed after graph's built.");
-
-                _FPS = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a list of available frame rates.
-        /// </summary>        
-        public FPSList FPSList
-        {
-            get { return _FPSList; }
         }
 
         /// <summary>
@@ -557,41 +513,6 @@ namespace Camera_NET
             }
 
             return ResolutionsAvailable;
-        }
-
-        /// <summary>
-        /// Returns available framerate for device moniker
-        /// </summary>
-        /// <param name="moniker">Moniker (device identification) of camera.</param>
-        /// <returns>List of framerates of device</returns>
-        public static FPSList GetFPSList(IMoniker moniker)
-        {
-            int hr;
-
-            FPSList FPSAvailable = null; //new FPSList();
-
-            // Get the graphbuilder object
-            IFilterGraph2 filterGraph = new FilterGraph() as IFilterGraph2;
-            IBaseFilter capFilter = null;
-
-            try
-            {
-                // add the video input device
-                hr = filterGraph.AddSourceFilterForMoniker(moniker, null, "Source Filter", out capFilter);
-                DsError.ThrowExceptionForHR(hr);
-
-                FPSAvailable = GetFPSAvailable(capFilter);
-            }
-            finally
-            {
-                SafeReleaseComObject(filterGraph);
-                filterGraph = null;
-
-                SafeReleaseComObject(capFilter);
-                capFilter = null;
-            }
-
-            return FPSAvailable;
         }
 
         #endregion
@@ -1017,12 +938,6 @@ namespace Camera_NET
             return _pSampleGrabberHelper.SnapshotNextFrame();
         }
 
-        public IntPtr ImageData()
-        {
-            return _pSampleGrabberHelper.GetNextFrame();
-        }
-
-
         #endregion
 
         #endregion
@@ -1043,7 +958,7 @@ namespace Camera_NET
 
             AddFilter_Renderer();
 
-            //AddFilter_Crossbar();
+            AddFilter_Crossbar();
 
             AddFilter_TeeSplitter();
 
@@ -1061,10 +976,10 @@ namespace Camera_NET
             try
             {
                 // Collect pins
-                //pinSourceCapture = DsFindPin.ByCategory(DX.CaptureFilter, PinCategory.Preview, 0);
+                //pinSourceCapture = DsFindPin.ByCategory(DX.CaptureFilter, PinCategory.Capture, 0);
                 pinSourceCapture = DsFindPin.ByDirection(DX.CaptureFilter, PinDirection.Output, 0);
 
-                SetSourceParams(pinSourceCapture, _Resolution, _FPS);
+                SetSourceParams(pinSourceCapture, _Resolution);
             }
             catch
             {
@@ -1106,29 +1021,6 @@ namespace Camera_NET
         }
 
         /// <summary>
-        /// Checks if AMMediaType's fps is appropriate for desired fps.
-        /// </summary>
-        /// <param name="media_type">Media type to analyze.</param>
-        /// <param name="fps_desired">Desired fps. Can be null, if it's not important.</param>
-        private static bool IsFPSAppropriate(AMMediaType media_type, FPS fps_desired)
-        {
-            // if we were asked to choose resolution
-            if (fps_desired == null)
-                return true;
-
-            VideoInfoHeader videoInfoHeader = new VideoInfoHeader();
-            Marshal.PtrToStructure(media_type.formatPtr, videoInfoHeader);
-
-            if (fps_desired.AvgFramesPerSec > 0 &&
-                videoInfoHeader.AvgTimePerFrame != fps_desired.AvgFramesPerSec)
-            {
-                return false;
-            }            
-
-            return true;
-        }
-
-        /// <summary>
         /// Get resoltuin from if AMMediaType's resolution is appropriate for resolution_desired
         /// </summary>
         /// <param name="media_type">Media type to analyze.</param>
@@ -1141,18 +1033,6 @@ namespace Camera_NET
             return new Resolution(videoInfoHeader.BmiHeader.Width, videoInfoHeader.BmiHeader.Height);
         }
 
-        /// <summary>
-        /// Get fps from if AMMediaType's avgframerate is appropriate for fps_desired
-        /// </summary>
-        /// <param name="media_type">Media type to analyze.</param>
-        /// <param name="fps_desired">Desired fps. Can be null, if it's not important.</param>
-        private static FPS GetFPSForMediaType(AMMediaType media_type)
-        {
-            VideoInfoHeader videoInfoHeader = new VideoInfoHeader();
-            Marshal.PtrToStructure(media_type.formatPtr, videoInfoHeader);
-
-            return new FPS(videoInfoHeader.AvgTimePerFrame);
-        }
 
         /// <summary>
         /// Get bit count for mediatype
@@ -1188,7 +1068,7 @@ namespace Camera_NET
         /// </summary>
         /// <param name="media_type">Media type to analyze.</param>
         /// <param name="resolution_desired">Desired resolution.</param>
-        private static void AnalyzeMediaType(AMMediaType media_type, Resolution resolution_desired, FPS fps_desired, out bool bit_count_ok, out bool sub_type_ok, out bool resolution_ok, out bool fps_ok)
+        private static void AnalyzeMediaType(AMMediaType media_type, Resolution resolution_desired, out bool bit_count_ok, out bool sub_type_ok, out bool resolution_ok)
         {
             // ---------------------------------------------------
             short bit_count = GetBitCountForMediaType(media_type);
@@ -1197,19 +1077,22 @@ namespace Camera_NET
 
             // ---------------------------------------------------
 
-            // We want MJPG
+            // We want (A)RGB32, RGB24 or RGB16 and YUY2.
             // These have priority
             // Change this if you're not agree.
-            sub_type_ok =  (                
-                media_type.subType == MediaSubType.MJPG);
+            sub_type_ok =  (
+                media_type.subType == MediaSubType.RGB32 ||
+                media_type.subType == MediaSubType.ARGB32 ||
+                media_type.subType == MediaSubType.RGB24 ||
+                media_type.subType == MediaSubType.RGB16_D3D_DX9_RT ||
+                media_type.subType == MediaSubType.RGB16_D3D_DX7_RT ||
+                media_type.subType == MediaSubType.YUY2);
 
             // ---------------------------------------------------
 
             // flag to show if media_type's resolution is appropriate for us
             resolution_ok = IsResolutionAppropiate(media_type, resolution_desired);
             // ---------------------------------------------------
-
-            fps_ok = IsFPSAppropriate(media_type, fps_desired);
         }
 
         /// <summary>
@@ -1217,7 +1100,7 @@ namespace Camera_NET
         /// </summary>
         /// <param name="pinSourceCapture">Pin of source capture.</param>
         /// <param name="resolution">Resolution to set if possible.</param>
-        private static void SetSourceParams(IPin pinSourceCapture, Resolution resolution_desired, FPS fps_desired)
+        private static void SetSourceParams(IPin pinSourceCapture, Resolution resolution_desired)
         {
             int hr = 0;
 
@@ -1259,13 +1142,12 @@ namespace Camera_NET
                     bool bit_count_ok = false;
                     bool sub_type_ok = false;
                     bool resolution_ok = false;
-                    bool fps_ok = false;
 
-                    AnalyzeMediaType(media_type, resolution_desired, fps_desired, out bit_count_ok, out sub_type_ok, out resolution_ok, out fps_ok);
+                    AnalyzeMediaType(media_type, resolution_desired, out bit_count_ok, out sub_type_ok, out resolution_ok);
 
-                    if (bit_count_ok && resolution_ok && fps_ok)
+                    if (bit_count_ok && resolution_ok)
                     {
-                        if (fps_ok)
+                        if (sub_type_ok)
                         {
                             hr = videoStreamConfig.SetFormat(media_type);
                             DsError.ThrowExceptionForHR(hr);
@@ -1860,7 +1742,7 @@ namespace Camera_NET
             {
                 pRaw = DsFindPin.ByDirection(captureFilter, PinDirection.Output, 0);
                 //pRaw = DsFindPin.ByCategory(captureFilter, PinCategory.Capture, 0);
-                //pRaw = DsFindPin.ByCategory(captureFilter, PinCategory.Preview, 0);
+                //pRaw = DsFindPin.ByCategory(filter, PinCategory.Preview, 0);
 
                 resolution_list = GetResolutionsAvailable(pRaw);
             }
@@ -1877,38 +1759,6 @@ namespace Camera_NET
             }
 
             return resolution_list;
-        }
-
-        /// <summary>
-        /// Gets available framerates (which are appropriate for us) for capture filter.
-        /// </summary>
-        /// <param name="captureFilter">Capture filter for asking for framerate list.</param>
-        private static FPSList GetFPSAvailable(IBaseFilter captureFilter)
-        {
-            FPSList fps_list = null;
-
-            IPin pRaw = null;
-            try
-            {
-                pRaw = DsFindPin.ByDirection(captureFilter, PinDirection.Output, 0);
-                //pRaw = DsFindPin.ByCategory(captureFilter, PinCategory.Capture, 0);
-                //pRaw = DsFindPin.ByCategory(captureFilter, PinCategory.Preview, 0);
-
-                fps_list = GetFPSAvailable(pRaw);
-            }
-            catch
-            {
-                throw;
-                //resolution_list = new ResolutionList();
-                //resolution_list.Add(new Resolution(640, 480));
-            }
-            finally
-            {
-                SafeReleaseComObject(pRaw);
-                pRaw = null;
-            }
-
-            return fps_list;
         }
 
         /// <summary>
@@ -2004,72 +1854,8 @@ namespace Camera_NET
             return ResolutionsAvailable;
         }
 
-        /// <summary>
-        /// Gets available fps (which are appropriate for us) for capture pin (PinCategory.Capture).
-        /// </summary>
-        /// <param name="captureFilter">Capture pin (PinCategory.Capture) for asking for fps list.</param>
-        private static FPSList GetFPSAvailable(IPin pinOutput)
-        {
-            int hr = 0;
-
-            FPSList fpsAvailable = new FPSList();
-
-            // Media type (should be cleaned)
-            AMMediaType media_type = null;
-
-            //NOTE: pSCC is not used. All we need is media_type
-            IntPtr pSCC = IntPtr.Zero;
-
-            try
-            {
-                IAMStreamConfig videoStreamConfig = pinOutput as IAMStreamConfig;
-
-                // -------------------------------------------------------------------------
-                // We want the interface to expose media type supports for only the last one set
-                //hr = videoStreamConfig.SetFormat(null);
-                //DsError.ThrowExceptionForHR(hr);
-
-                int piCount = 0;
-                int piSize = 0;
-
-                hr = videoStreamConfig.GetNumberOfCapabilities(out piCount, out piSize);
-                DsError.ThrowExceptionForHR(hr);
-
-                for (int i = 0; i < piCount; i++)
-                {
-                    // ---------------------------------------------------
-                    pSCC = Marshal.AllocCoTaskMem(piSize);
-                    videoStreamConfig.GetStreamCaps(i, out media_type, pSCC);
-
-                    // NOTE: we could use VideoStreamConfigCaps.InputSize or something like that to get resolution, but it's deprecated
-                    //VideoStreamConfigCaps videoStreamConfigCaps = (VideoStreamConfigCaps)Marshal.PtrToStructure(pSCC, typeof(VideoStreamConfigCaps));
-                    // ---------------------------------------------------
-
-                    if (IsBitCountAppropriate(GetBitCountForMediaType(media_type)))
-                    {
-                        fpsAvailable.AddIfNew(GetFPSForMediaType(media_type));
-                    }
-
-                    FreeSCCMemory(ref pSCC);
-                    FreeMediaType(ref media_type);
-                }
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                // clean up
-                FreeSCCMemory(ref pSCC);
-                FreeMediaType(ref media_type);
-            }
-
-            return fpsAvailable;
-        }
-
         #endregion
-
+        
         #region Coorinate convertions
 
         // Information: coordinate types:
