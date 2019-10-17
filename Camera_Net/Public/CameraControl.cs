@@ -500,6 +500,13 @@ namespace Camera_NET
             return _Camera.SnapshotSourceImage();
         }
 
+        public byte[] SnapshotSourceImageData()
+        {
+            _ThrowIfCameraWasNotCreated();
+
+            return _Camera.SnapshotSourceImageData();
+        }
+
         #endregion
 
         // ====================================================================

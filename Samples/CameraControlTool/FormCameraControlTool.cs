@@ -32,11 +32,15 @@ namespace CameraControlTool
     using Camera_NET;
 
     using DirectShowLib;
+    using System.Collections.Generic;
 
     #endregion
 
     public partial class FormCameraControlTool : Form
     {
+
+        private System.Timers.Timer snap_timer = new System.Timers.Timer();
+
         #region Vars
 
         // Camera object
@@ -162,7 +166,7 @@ namespace CameraControlTool
         {
             if (!cameraControl.CameraCreated)
                 return;
-
+            /*
             Bitmap bitmap = null;
             try
             {
@@ -175,9 +179,21 @@ namespace CameraControlTool
 
             if (bitmap == null)
                 return;
+                */
 
-            pictureBoxScreenshot.Image = bitmap;
-            pictureBoxScreenshot.Update();
+            snap_timer.Interval = 1000 / 15;
+            snap_timer.Elapsed += Snap_timer_Elapsed;
+            snap_timer.Start();
+
+            //pictureBoxScreenshot.Image = bitmap;
+            //pictureBoxScreenshot.Update();
+        }
+
+        List<byte[]> list = new List<byte[]>();
+
+        private void Snap_timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            list.Add(cameraControl.SnapshotSourceImageData());
         }
 
         private void buttonClearSnapshotFrame_Click(object sender, EventArgs e)

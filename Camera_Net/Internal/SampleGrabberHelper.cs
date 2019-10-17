@@ -233,6 +233,55 @@ namespace Camera_NET
             return bitmap_clone;
         }
 
+        public byte[] SnapshotNextFrameData()
+        {
+            if (m_SampleGrabber == null)
+                throw new Exception("SampleGrabber was not initialized");
+
+            // capture image
+            IntPtr ip = GetNextFrame();
+
+            if (ip == IntPtr.Zero)
+            {
+                throw new Exception("Can not snap next frame");
+            }
+
+            byte[] bytes = null;
+
+            PixelFormat pixelFormat = PixelFormat.Format24bppRgb;
+            switch (m_videoBitCount)
+            {
+                case 24:
+                    pixelFormat = PixelFormat.Format24bppRgb;
+                    break;
+                case 32:
+                    pixelFormat = PixelFormat.Format32bppRgb;
+                    break;
+                case 48:
+                    pixelFormat = PixelFormat.Format48bppRgb;
+                    break;
+                default:
+                    throw new Exception("Unsupported BitCount");
+            }
+
+            Marshal.Copy(ip, bytes, 0, Marshal.SizeOf(ip));
+            
+            //Bitmap bitmap = new Bitmap(m_videoWidth, m_videoHeight, (m_videoBitCount / 8) * m_videoWidth, pixelFormat, ip);
+
+            //bitmap_clone = bitmap.Clone(new Rectangle(0, 0, m_videoWidth, m_videoHeight), PixelFormat.Format24bppRgb);
+            //bitmap_clone.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+            // Release any previous buffer
+            if (ip != IntPtr.Zero)
+            {
+                Marshal.FreeCoTaskMem(ip);
+                ip = IntPtr.Zero;
+            }
+
+            
+
+            return bytes;
+        }
 
         /// <summary>
         /// Makes a snapshot of current frame

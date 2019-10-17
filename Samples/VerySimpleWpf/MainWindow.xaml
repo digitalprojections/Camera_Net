@@ -12,5 +12,6 @@
         mc:Ignorable="d" Closed="Window_Closed">
     <Grid>
         <public:CameraControlWpf Name="cameraControl" />
+        <Label Content="Label" HorizontalAlignment="Left" Margin="395,245,0,0" VerticalAlignment="Top" FontSize="48"/>
     </Grid>
 </Window>

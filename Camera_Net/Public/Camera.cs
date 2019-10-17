@@ -925,6 +925,13 @@ namespace Camera_NET
             return bitmap_clone;
         }
 
+        public byte[] SnapshotSourceImageData()
+        {
+            if (_pSampleGrabberHelper == null)
+                throw new Exception("SampleGrabberHelper is not initialized.");
+            return _pSampleGrabberHelper.SnapshotNextFrameData();
+        }
+
         /// <summary>
         /// Make snapshot of source image. Much faster than SnapshotOutputImage.
         /// </summary>

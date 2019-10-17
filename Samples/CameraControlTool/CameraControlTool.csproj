@@ -54,6 +54,9 @@
     <ApplicationIcon>Camera_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Camera_NET">
+      <HintPath>..\..\Camera_Net\bin\Debug\Camera_NET.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -93,10 +96,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Camera_NET\Camera_NET.csproj">
-      <Project>{E6052609-A070-41D5-85B9-ACABA91170C5}</Project>
-      <Name>Camera_NET</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\DirectShowLib\DirectShowLib-2010.csproj">
       <Project>{CE009BFA-5EF6-4153-B2A1-2FA79698A9AE}</Project>
       <Name>DirectShowLib-2010</Name>
